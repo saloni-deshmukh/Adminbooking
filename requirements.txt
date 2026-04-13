@@ -3,3 +3,4 @@ pandas
 openpyxl
 azure-storage-blob
 gunicorn
+uvicorn
