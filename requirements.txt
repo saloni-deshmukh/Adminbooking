@@ -4,5 +4,5 @@ openpyxl
 azure-storage-blob
 gunicorn
 uvicorn
-pywin32
+pywin32; platform_system == "Windows"
 numpy
