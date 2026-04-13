@@ -5,3 +5,4 @@ azure-storage-blob
 gunicorn
 uvicorn
 pywin32
+numpy
