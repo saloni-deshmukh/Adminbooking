@@ -213,7 +213,10 @@ def root():
         return redirect(url_for("admin_dashboard") if session["role"] == "admin" else url_for("booking"))
     return redirect(url_for("login"))
 
-
+@app.route("/health")
+def health():
+    return "OK"
+  
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
