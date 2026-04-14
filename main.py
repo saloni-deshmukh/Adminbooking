@@ -22,6 +22,13 @@ from azure.storage.blob import BlobServiceClient
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-me-in-production")
 
+# Development: shorter session timeout for easier testing
+if os.environ.get("FLASK_ENV") != "production":
+    app.config["PERMANENT_SESSION_LIFETIME"] = 3600  # 1 hour
+    app.config["SESSION_COOKIE_SECURE"] = False
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
 # ── AZURE BLOB STORAGE CONFIG ─────────────────────────────────────────
 # Set these in Azure App Service → Configuration → Application Settings
 AZURE_STORAGE_CONNECTION_STRING = os.environ.get("AZURE_STORAGE_CONNECTION_STRING", "DefaultEndpointsProtocol=https;AccountName=adminbooking;AccountKey=YiFCuEJAeDJ3IUsSHrp/Xh0DvOqGhBwL/4RK0aU3gxoinzHmMQ7UO9i5ogieVq6PuxJczc3gWReo+ASt9/cyUw==;EndpointSuffix=core.windows.net")
