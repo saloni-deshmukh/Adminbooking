@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>NTT DATA – Book a Room</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f5f0fb;min-height:100vh}
+
+  /* ── NAV ── */
+  nav{background:linear-gradient(90deg,#6a1a9a 0%,#8e44ad 100%);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:58px;box-shadow:0 2px 14px rgba(100,20,160,.3);position:sticky;top:0;z-index:100}
+  .nav-logo img{height:32px;display:block}
+  .avatar-wrap{position:relative}
+  .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#c840e0,#8e44ad);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem;color:#fff;cursor:pointer;border:2px solid rgba(255,255,255,.4);user-select:none;transition:.15s}
+  .avatar:hover{border-color:#fff}
+  .avatar-label{display:flex;align-items:center;gap:9px}
+  .avatar-name{color:rgba(255,255,255,.85);font-size:.85rem;white-space:nowrap}
+  .avatar-dropdown{position:absolute;right:0;top:48px;background:#fff;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.18);min-width:200px;padding:8px 0;display:none;z-index:200}
+  .avatar-dropdown.open{display:block}
+  .avatar-dropdown .dd-header{padding:12px 16px 8px;border-bottom:1px solid #f0f0f0}
+  .avatar-dropdown .dd-name{font-weight:700;color:#6a1a9a;font-size:.92rem}
+  .avatar-dropdown .dd-role{font-size:.75rem;color:#888;margin-top:2px}
+  .avatar-dropdown .dd-email{font-size:.73rem;color:#999;margin-top:1px;word-break:break-all}
+  .avatar-dropdown .dd-btn{display:flex;align-items:center;gap:9px;width:100%;padding:10px 16px;background:none;border:none;cursor:pointer;font-size:.88rem;color:#444;transition:.15s;text-align:left}
+  .avatar-dropdown .dd-btn:hover{background:#f5f0ff;color:#6a1a9a}
+  .avatar-dropdown .dd-btn svg{flex-shrink:0}
+
+  /* ── LAYOUT ── */
+  .container{max-width:820px;margin:32px auto;padding:0 18px}
+  h1{font-size:1.5rem;color:#5a1080;margin-bottom:4px}
+  .subtitle{color:#9e82bf;font-size:.88rem;margin-bottom:26px}
+
+  /* ── STEPPER ── */
+  .stepper{display:flex;align-items:flex-start;margin-bottom:28px;background:#fff;border-radius:12px;padding:18px 22px;box-shadow:0 2px 12px rgba(100,20,160,.08)}
+  .step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative}
+  .step:not(:last-child)::after{content:'';position:absolute;top:17px;left:56%;width:88%;height:2px;background:#e0d4f0;transition:.3s}
+  .step.done::after{background:#28a745}
+  .step.active::after{background:#c9a8e8}
+  .step-circle{width:34px;height:34px;border-radius:50%;border:2px solid #dde2eb;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#bbb;transition:.3s;z-index:1}
+  .step.active .step-circle{border-color:#8e44ad;color:#8e44ad;background:#f5eeff}
+  .step.done .step-circle{border-color:#28a745;background:#28a745;color:#fff;font-size:.8rem}
+  .step-label{font-size:.7rem;color:#bbb;margin-top:5px;text-align:center;font-weight:600}
+  .step.active .step-label,.step.done .step-label{color:#6a1a9a}
+
+  /* ── PANELS ── */
+  .panel{background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(100,20,160,.07);padding:26px 30px;margin-bottom:20px;display:none}
+  .panel.active{display:block}
+  .panel h2{font-size:1.05rem;color:#6a1a9a;margin-bottom:18px;font-weight:700}
+
+  /* ── CALENDAR ── */
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .cal-nav button{background:none;border:1.5px solid #e0d4f0;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:1rem;transition:.15s;color:#333}
+  .cal-nav button:hover{background:#f5eeff;border-color:#8e44ad}
+  .cal-month{font-weight:700;color:#6a1a9a;font-size:.97rem}
+  .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .cal-header{text-align:center;font-size:.72rem;font-weight:700;color:#aaa;padding:5px 0}
+  .cal-day{text-align:center;padding:8px 3px;border-radius:6px;cursor:pointer;font-size:.85rem;transition:.15s;border:1.5px solid transparent;line-height:1}
+  .cal-day:hover{background:#f5eeff;border-color:#c9a8e8}
+  .cal-day.selected{background:#8e44ad;color:#fff;border-color:#8e44ad}
+  .cal-day.today{font-weight:700;color:#8e44ad}
+  .cal-day.today.selected{color:#fff}
+  .cal-day.disabled{color:#ddd;cursor:default;pointer-events:none}
+
+  /* ── FORM ── */
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .form-group{margin-bottom:14px}
+  label{display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:5px}
+  select,input[type=time],input[type=text],textarea{width:100%;padding:10px 12px;border:1.5px solid #e0d4f0;border-radius:8px;font-size:.9rem;transition:.2s;background:#fff;color:#222}
+  select:focus,input:focus,textarea:focus{outline:none;border-color:#8e44ad;box-shadow:0 0 0 3px rgba(142,68,173,.09)}
+  select:disabled{background:#f5f5f5;color:#aaa;cursor:not-allowed}
+  textarea{resize:vertical;min-height:72px}
+
+  /* ── ROOM CARDS ── */
+  .room-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:4px}
+  .room-card{border:2px solid #e0d4f0;border-radius:10px;padding:14px 16px;cursor:pointer;transition:.2s;background:#fff}
+  .room-card:hover{border-color:#8e44ad;background:#faf5ff}
+  .room-card.selected{border-color:#8e44ad;background:#f5eeff;box-shadow:0 0 0 3px rgba(142,68,173,.12)}
+  .room-card .rc-name{font-weight:700;color:#6a1a9a;font-size:.92rem;margin-bottom:4px}
+  .room-card .rc-detail{font-size:.78rem;color:#777;margin-top:2px}
+  .rc-badge{display:inline-block;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:6px}
+  .rc-badge.Conference{background:#f0e6ff;color:#6a1a9a}
+  .rc-badge.Meeting{background:#e8faf0;color:#1a8a3d}
+  .rc-badge.Cabin{background:#fff8e6;color:#b45309}
+  .no-rooms{text-align:center;padding:28px;color:#aaa;font-size:.9rem;grid-column:1/-1}
+  .loading-msg{color:#888;font-size:.88rem;padding:16px 0}
+
+  /* ── CONFIRM BOX ── */
+  .confirm-box{background:#faf5ff;border:1.5px solid #d5b8f0;border-radius:10px;padding:18px 22px}
+  .confirm-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e8d8f5;font-size:.9rem}
+  .confirm-row:last-child{border-bottom:none}
+  .confirm-label{color:#777;font-weight:500}
+  .confirm-value{color:#111;font-weight:600;text-align:right;max-width:60%}
+
+  /* ── BUTTONS ── */
+  .btn-row{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap}
+  .btn{padding:11px 26px;border:none;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;transition:.2s}
+  .btn-primary{background:linear-gradient(90deg,#8e44ad,#6a1a9a);color:#fff;box-shadow:0 3px 12px rgba(106,26,154,.25)}
+  .btn-primary:hover{background:linear-gradient(90deg,#7a3896,#5a0a80)}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+  .btn-secondary{background:#f5f0ff;color:#6a1a9a;border:1.5px solid #8e44ad}
+  .btn-secondary:hover{background:#ede5ff}
+
+  /* ── SUCCESS ── */
+  .success-box{text-align:center;padding:28px 16px}
+  .success-icon{font-size:2.8rem;margin-bottom:14px}
+  .success-box h2{color:#1a8a3d;font-size:1.4rem;margin-bottom:8px}
+  .success-box p{color:#555;font-size:.9rem;margin-bottom:5px}
+  .bid-badge{display:inline-block;background:linear-gradient(90deg,#8e44ad,#6a1a9a);color:#fff;border-radius:8px;padding:8px 22px;margin-top:14px;font-weight:700;font-size:1rem;letter-spacing:1px}
+
+
+  /* ── MULTI-SELECT ── */
+  .multi-select-wrap{position:relative}
+  .multi-select-display{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 12px;border:1.5px solid #e0d4f0;border-radius:8px;font-size:.9rem;cursor:pointer;background:#fff;color:#222;user-select:none;transition:.2s;gap:8px}
+  .multi-select-display:hover{border-color:#8e44ad}
+  .multi-select-display.open{border-color:#8e44ad;box-shadow:0 0 0 3px rgba(142,68,173,.09)}
+  .multi-select-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid #e0d4f0;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:300;padding:6px 0}
+  .multi-select-dropdown.open{display:block}
+  .fac-option{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:.88rem;color:#333;transition:.15s}
+  .fac-option:hover{background:#f5eeff;color:#6a1a9a}
+  .fac-option input[type=checkbox]{accent-color:#8e44ad;width:15px;height:15px;cursor:pointer;flex-shrink:0}
+  .fac-tag{display:inline-flex;align-items:center;gap:4px;background:#f0e6ff;color:#6a1a9a;border-radius:12px;padding:2px 8px;font-size:.75rem;font-weight:600}
+
+  /* ── SUGGESTIONS ── */
+  .suggest-section{margin-top:16px;padding:14px 18px;background:linear-gradient(135deg,#fff8e6,#fff3d0);border:1.5px solid #f5c842;border-radius:12px;grid-column:1/-1}
+  .suggest-header{display:flex;align-items:center;gap:8px;font-weight:700;color:#92600a;font-size:.92rem;margin-bottom:12px}
+  .suggest-header svg{flex-shrink:0}
+  .suggest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+  .suggest-card{border:2px solid #f5c842;border-radius:10px;padding:12px 14px;cursor:pointer;transition:.2s;background:#fff}
+  .suggest-card:hover{border-color:#e6a800;background:#fffbf0;box-shadow:0 0 0 3px rgba(245,200,66,.18)}
+  .suggest-card.selected{border-color:#8e44ad;background:#f5eeff;box-shadow:0 0 0 3px rgba(142,68,173,.12)}
+  .suggest-card .rc-name{font-weight:700;color:#6a1a9a;font-size:.9rem;margin-bottom:4px}
+  .suggest-card .rc-detail{font-size:.77rem;color:#666;margin-top:2px}
+  .suggest-floor-badge{display:inline-block;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:6px;background:#fff3d0;color:#92600a}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:7px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav>
+  <div class="nav-logo">
+    <img src="data:image/png;base64,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" alt="Logo"/>
+    <span class="logo-text"></span>
+
+  </div>
+  <div class="avatar-wrap">
+    <div class="avatar-label" onclick="toggleDropdown()" style="cursor:pointer">
+      <span class="avatar-name">{{ name }}</span>
+      <div class="avatar" id="avatarCircle">{{ name[0]|upper }}</div>
+    </div>
+    <div class="avatar-dropdown" id="avatarDropdown">
+      <div class="dd-header">
+        <div class="dd-name">{{ name }}</div>
+        <div class="dd-role">Employee</div>
+        <div class="dd-email" id="ddEmail">{{ email }}</div>
+      </div>
+      <button class="dd-btn" onclick="window.location.href='/logout'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>Book a Meeting Room</h1>
+  <p class="subtitle">Select date, time &amp; location to find available rooms</p>
+
+  <!-- STEPPER -->
+  <div class="stepper">
+    <div class="step active" id="s1"><div class="step-circle">1</div><span class="step-label">Date</span></div>
+    <div class="step" id="s2"><div class="step-circle">2</div><span class="step-label">Details</span></div>
+    <div class="step" id="s3"><div class="step-circle">3</div><span class="step-label">Rooms</span></div>
+    <div class="step" id="s4"><div class="step-circle">4</div><span class="step-label">Confirm</span></div>
+    <div class="step" id="s5"><div class="step-circle">✓</div><span class="step-label">Done</span></div>
+  </div>
+
+  <!-- STEP 1: DATE -->
+  <div class="panel active" id="panel1">
+    <h2>📅 Select a Date</h2>
+    <div class="cal-nav">
+      <button onclick="prevMonth()">&#8249;</button>
+      <span class="cal-month" id="calMonth"></span>
+      <button onclick="nextMonth()">&#8250;</button>
+    </div>
+    <div class="calendar-grid" id="calGrid"></div>
+    <div class="btn-row"><button class="btn btn-primary" id="btnStep1" disabled onclick="goStep(2)">Next →</button></div>
+  </div>
+
+  <!-- STEP 2: DETAILS -->
+  <div class="panel" id="panel2">
+    <h2>⚙️ Enter Booking Details</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Start Time</label>
+        <input type="time" id="inpStart" min="08:00" max="19:30" step="1800"/>
+      </div>
+      <div class="form-group">
+        <label>End Time</label>
+        <input type="time" id="inpEnd" min="08:30" max="20:00" step="1800"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Location</label>
+        <select id="selLocation" onchange="loadFloors()"><option value="">-- Select --</option></select>
+      </div>
+      <div class="form-group">
+        <label>Floor</label>
+        <select id="selFloor" disabled><option value="">-- Select --</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Number of People</label>
+        <select id="selPeople">
+          <option value="">-- Select --</option>
+          <script>for(let i=1;i<=12;i++) document.write(`<option value="${i}">${i} ${i===1?'person':'people'}</option>`)</script>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Purpose <span style="color:#aaa;font-weight:400">(optional)</span></label>
+        <input type="text" id="inpPurpose" placeholder="e.g. Client meeting"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Facilities Required <span style="color:#aaa;font-weight:400">(optional)</span></label>
+      <div class="multi-select-wrap" id="facilitiesWrap">
+        <div class="multi-select-display" id="facilitiesDisplay" onclick="toggleFacilitiesDropdown()">
+          <span id="facilitiesPlaceholder" style="color:#aaa">-- Select facilities --</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="multi-select-dropdown" id="facilitiesDropdown">
+          <label class="fac-option"><input type="checkbox" value="Projector" onchange="updateFacilities()"> 📽️ Projector</label>
+          <label class="fac-option"><input type="checkbox" value="Audio System" onchange="updateFacilities()"> 🔊 Audio System</label>
+          <label class="fac-option"><input type="checkbox" value="Connectors" onchange="updateFacilities()"> 🔌 Connectors (HDMI/VGA)</label>
+          <label class="fac-option"><input type="checkbox" value="Charging Panel" onchange="updateFacilities()"> ⚡ Charging Panel</label>
+          <label class="fac-option"><input type="checkbox" value="Board with Marker" onchange="updateFacilities()"> 🗒️ Board with Marker</label>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" onclick="searchRooms()">Search Available Rooms</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: ROOMS -->
+  <div class="panel" id="panel3">
+    <h2>🏢 Select a Room</h2>
+    <div id="roomsContainer"><div class="loading-msg">Loading rooms…</div></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary" id="btnStep3" disabled onclick="goStep(4)">Next →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: CONFIRM -->
+  <div class="panel" id="panel4">
+    <h2>✅ Review &amp; Confirm</h2>
+    <div class="confirm-box" id="confirmDetails"></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goStep(3)">← Back</button>
+      <button class="btn btn-primary" id="btnConfirm" onclick="submitBooking()">Confirm Booking</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: SUCCESS -->
+  <div class="panel" id="panel5">
+    <div class="success-box">
+      <div class="success-icon">🎉</div>
+      <h2>Booking Submitted!</h2>
+      <p>Your request is <strong>awaiting admin approval</strong>.</p>
+      <p>A confirmation will be sent to your email once approved.</p>
+      <div class="bid-badge" id="bookingIdBadge"></div>
+      <div class="btn-row" style="justify-content:center;margin-top:22px">
+        <button class="btn btn-primary" onclick="resetForm()">Book Another Room</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedDate=null, selectedRoom=null;
+let calYear=new Date().getFullYear(), calMon=new Date().getMonth();
+
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function renderCalendar(){
+  document.getElementById('calMonth').textContent=`${MONTHS[calMon]} ${calYear}`;
+  const grid=document.getElementById('calGrid');
+  grid.innerHTML=DAYS.map(d=>`<div class="cal-header">${d}</div>`).join('');
+  const first=new Date(calYear,calMon,1).getDay();
+  const total=new Date(calYear,calMon+1,0).getDate();
+  const today=new Date(); today.setHours(0,0,0,0);
+  for(let i=0;i<first;i++) grid.innerHTML+=`<div></div>`;
+  for(let d=1;d<=total;d++){
+    const date=new Date(calYear,calMon,d);
+    const iso=`${calYear}-${String(calMon+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const past=date<today, sel=iso===selectedDate, tod=date.getTime()===today.getTime();
+    let cls='cal-day';
+    if(past) cls+=' disabled'; if(tod) cls+=' today'; if(sel) cls+=' selected';
+    grid.innerHTML+=`<div class="${cls}" onclick="selectDate('${iso}',this)">${d}</div>`;
+  }
+}
+function prevMonth(){if(calMon===0){calMon=11;calYear--;}else calMon--;renderCalendar();}
+function nextMonth(){if(calMon===11){calMon=0;calYear++;}else calMon++;renderCalendar();}
+function selectDate(iso,el){
+  selectedDate=iso;
+  document.querySelectorAll('.cal-day').forEach(d=>d.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('btnStep1').disabled=false;
+}
+renderCalendar();
+
+async function initFilters(){
+  const r=await fetch('/api/filters');
+  const d=await r.json();
+  const sel=document.getElementById('selLocation');
+  d.locations.forEach(l=>{const o=document.createElement('option');o.value=l;o.textContent=l;sel.appendChild(o);});
+}
+async function loadFloors(){
+  const loc=document.getElementById('selLocation').value;
+  const fsel=document.getElementById('selFloor');
+  fsel.innerHTML='<option value="">-- Select --</option>'; fsel.disabled=true;
+  if(!loc) return;
+  const r=await fetch('/api/floors?location='+encodeURIComponent(loc));
+  const d=await r.json();
+  d.floors.forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f;fsel.appendChild(o);});
+  fsel.disabled=false;
+}
+initFilters();
+
+// ── Facilities multi-select logic ──
+let selectedFacilities=[];
+function toggleFacilitiesDropdown(){
+  const dd=document.getElementById('facilitiesDropdown');
+  const disp=document.getElementById('facilitiesDisplay');
+  dd.classList.toggle('open');
+  disp.classList.toggle('open');
+}
+function updateFacilities(){
+  const cbs=document.querySelectorAll('#facilitiesDropdown input[type=checkbox]');
+  selectedFacilities=[];
+  cbs.forEach(cb=>{if(cb.checked) selectedFacilities.push(cb.value);});
+  const ph=document.getElementById('facilitiesPlaceholder');
+  if(selectedFacilities.length===0){
+    ph.innerHTML='<span style="color:#aaa">-- Select facilities --</span>';
+  } else {
+    ph.innerHTML=selectedFacilities.map(f=>`<span class="fac-tag">${f}</span>`).join(' ');
+  }
+}
+document.addEventListener('click',e=>{
+  const wrap=document.getElementById('facilitiesWrap');
+  if(wrap && !wrap.contains(e.target)){
+    document.getElementById('facilitiesDropdown').classList.remove('open');
+    document.getElementById('facilitiesDisplay').classList.remove('open');
+  }
+});
+
+async function searchRooms(){
+  const loc    = document.getElementById('selLocation').value;
+  const floor  = document.getElementById('selFloor').value;
+  const people = document.getElementById('selPeople').value;
+  const start  = document.getElementById('inpStart').value;
+  const end    = document.getElementById('inpEnd').value;
+
+  if(!start||!end){alert('Please enter start and end time.');return;}
+  if(!loc||!floor){alert('Please select location and floor.');return;}
+  if(!people){alert('Please select number of people.');return;}
+  if(start>=end){alert('End time must be after start time.');return;}
+
+  goStep(3);
+  selectedRoom=null;
+  document.getElementById('btnStep3').disabled=true;
+  document.getElementById('roomsContainer').innerHTML='<div class="loading-msg"><em>Searching available rooms…</em></div>';
+
+  const r=await fetch('/api/check',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({location:loc,floor:floor,date:selectedDate,start_time:start,end_time:end,people:parseInt(people),facilities:selectedFacilities})});
+  const d=await r.json();
+
+  if(d.error){document.getElementById('roomsContainer').innerHTML=`<div class="loading-msg" style="color:#c00">${d.error}</div>`;return;}
+
+  if(!d.rooms||d.rooms.length===0){
+    // Fetch smart suggestions from other floors/locations
+    const sr=await fetch('/api/check',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({location:loc,floor:'',date:selectedDate,start_time:start,end_time:end,people:parseInt(people),suggest:true,facilities:selectedFacilities})});
+    const sd=await sr.json();
+
+    let suggestHtml='';
+    if(sd.rooms && sd.rooms.length>0){
+      suggestHtml=`<div class="suggest-section">
+        <div class="suggest-header">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92600a" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Suggested alternatives matching your requirements:
+        </div>
+        <div class="suggest-grid">`;
+      sd.rooms.slice(0,6).forEach(room=>{
+        const diff=room.location && room.location!==loc ? ` · ${room.location}` : '';
+        suggestHtml+=`<div class="suggest-card" id="rc_${room.room_id}" onclick="selectSuggestedRoom(${JSON.stringify(room).replace(/"/g,'&quot;')})">
+          <div class="rc-name">${room.room_name}</div>
+          <div class="rc-detail">👥 Capacity: <strong>${room.capacity} people</strong></div>
+          <div class="rc-detail">🕐 Same time slot available</div>
+          <span class="suggest-floor-badge">📍 ${room.floor}${diff}</span>
+        </div>`;
+      });
+      suggestHtml+='</div></div>';
+    }
+
+    document.getElementById('roomsContainer').innerHTML=
+      `<div class="no-rooms" style="grid-column:1/-1">😔 No rooms available on <strong>${floor}</strong> for your criteria.<br>
+       <small style="color:#999">Showing alternatives below that match your capacity${selectedFacilities.length?(' & facilities'):''}.</small></div>`
+      + suggestHtml;
+    return;
+  }
+
+  let html='<div class="room-grid">';
+  d.rooms.forEach(room=>{
+    html+=`
+    <div class="room-card" id="rc_${room.room_id}" onclick="selectRoom(${JSON.stringify(room).replace(/"/g,'&quot;')})">
+      <div class="rc-name">${room.room_name}</div>
+      <div class="rc-detail">👥 Capacity: <strong>${room.capacity}</strong></div>
+      <div class="rc-detail">📍 ${room.floor}</div>
+      <span class="rc-badge ${room.type}">${room.type}</span>
+    </div>`;
+  });
+  html+='</div>';
+  document.getElementById('roomsContainer').innerHTML=html;
+}
+
+function selectSuggestedRoom(room){
+  selectedRoom=room;
+  // Update location/floor selects to match suggestion
+  const locSel=document.getElementById('selLocation');
+  if(room.location) locSel.value=room.location;
+  // Reload floors then set value
+  const floor=room.floor;
+  loadFloors().then(()=>{document.getElementById('selFloor').value=floor;});
+  document.querySelectorAll('.suggest-card,.room-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('rc_'+room.room_id)?.classList.add('selected');
+  document.getElementById('btnStep3').disabled=false;
+}
+
+function selectRoom(room){
+  selectedRoom=room;
+  document.querySelectorAll('.room-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('rc_'+room.room_id)?.classList.add('selected');
+  document.getElementById('btnStep3').disabled=false;
+}
+
+function goStep(n){
+  document.querySelectorAll('.panel').forEach((p,i)=>{p.classList.toggle('active',i+1===n);});
+  document.querySelectorAll('.step').forEach((s,i)=>{
+    s.classList.remove('active','done');
+    if(i+1<n) s.classList.add('done');
+    if(i+1===n) s.classList.add('active');
+  });
+  if(n===4) buildConfirm();
+}
+
+function buildConfirm(){
+  const loc    = document.getElementById('selLocation').value;
+  const floor  = document.getElementById('selFloor').value;
+  const people = document.getElementById('selPeople').value;
+  const start  = document.getElementById('inpStart').value;
+  const end    = document.getElementById('inpEnd').value;
+  const purpose= document.getElementById('inpPurpose').value||'–';
+  document.getElementById('confirmDetails').innerHTML=`
+    <div class="confirm-row"><span class="confirm-label">Date</span><span class="confirm-value">${selectedDate}</span></div>
+    <div class="confirm-row"><span class="confirm-label">Time</span><span class="confirm-value">${start} – ${end}</span></div>
+    <div class="confirm-row"><span class="confirm-label">Location</span><span class="confirm-value">${loc} | ${floor}</span></div>
+    <div class="confirm-row"><span class="confirm-label">Room</span><span class="confirm-value">${selectedRoom.room_name}</span></div>
+    <div class="confirm-row"><span class="confirm-label">Type</span><span class="confirm-value">${selectedRoom.type}</span></div>
+    <div class="confirm-row"><span class="confirm-label">People</span><span class="confirm-value">${people}</span></div>
+    <div class="confirm-row"><span class="confirm-label">Purpose</span><span class="confirm-value">${purpose}</span></div>
+    <div class="confirm-row"><span class="confirm-label">Facilities</span><span class="confirm-value">${selectedFacilities.length?selectedFacilities.join(', '):'None'}</span></div>
+    <div class="confirm-row"><span class="confirm-label">Status</span><span class="confirm-value" style="color:#8e44ad">⏳ Pending Approval</span></div>
+  `;
+}
+
+async function submitBooking(){
+  const btn=document.getElementById('btnConfirm');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Submitting…';
+  const payload={
+    room_id:    selectedRoom.room_id,
+    location:   document.getElementById('selLocation').value,
+    floor:      document.getElementById('selFloor').value,
+    date:       selectedDate,
+    start_time: document.getElementById('inpStart').value,
+    end_time:   document.getElementById('inpEnd').value,
+    people:     document.getElementById('selPeople').value,
+    purpose:    document.getElementById('inpPurpose').value,
+    facilities: selectedFacilities
+  };
+  const r=await fetch('/api/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const d=await r.json();
+  if(d.status==='ok'){
+    document.getElementById('bookingIdBadge').textContent=d.booking_id;
+    goStep(5);
+  } else {
+    alert('Booking failed. Please try again.');
+    btn.disabled=false; btn.textContent='Confirm Booking';
+  }
+}
+
+function resetForm(){
+  selectedDate=null; selectedRoom=null;
+  document.getElementById('btnStep1').disabled=true;
+  document.querySelectorAll('.cal-day').forEach(d=>d.classList.remove('selected'));
+  document.getElementById('inpStart').value='';
+  document.getElementById('inpEnd').value='';
+  document.getElementById('selLocation').value='';
+  document.getElementById('selFloor').innerHTML='<option value="">-- Select --</option>';
+  document.getElementById('selFloor').disabled=true;
+  document.getElementById('selPeople').value='';
+  document.getElementById('inpPurpose').value='';
+  document.getElementById('roomsContainer').innerHTML='';
+  selectedFacilities=[];
+  document.querySelectorAll('#facilitiesDropdown input[type=checkbox]').forEach(cb=>cb.checked=false);
+  updateFacilities();
+  goStep(1);
+}
+
+function toggleDropdown(){
+  document.getElementById('avatarDropdown').classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  const wrap=document.querySelector('.avatar-wrap');
+  if(!wrap.contains(e.target)) document.getElementById('avatarDropdown').classList.remove('open');
+});
+</script>
+</body>
+</html>
