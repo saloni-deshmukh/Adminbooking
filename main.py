@@ -40,10 +40,10 @@ EMPLOYEE_BLOB = "login.xlsx"
 
 # ── EMAIL CONFIG (SMTP) ───────────────────────────────────────────────
 # Use your corporate SMTP or any relay (e.g. Office 365, SendGrid, Gmail)
-SMTP_HOST     = os.environ.get("SMTP_HOST", "smtp.office365.com")
+SMTP_HOST     = os.environ.get("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT     = int(os.environ.get("SMTP_PORT", "587"))
-SMTP_USER     = os.environ.get("SMTP_USER", "")      # sender email address
-SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")  # app password / SMTP password
+SMTP_USER     = os.environ.get("SMTP_USER", "salooniie07@gmail.com")      # sender email address
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "fsjk ifok xjtx cqqr")  # app password / SMTP password
 
 # ── LOGO & ADMIN ───────────────────────────────────────────────────────
 LOGO_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAU4AAABcCAYAAAABOlxNAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAFxEAABcRAcom8z8AABwCSURBVHhe7Z0JlFxVmcc/Rh1xG0V0BjfE5biN2wgzqON2cANHx3FBBwVRlChZut69r6o7QbE5bgNHcdRxVBQVdUSJihhCd9e791X1ko0krCLIMrIMm7KEBBJCSNJz/t+tV6m6773qqu7q7iT1/c75Tifd7771vv+797vf/S6RIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAjCfktp1ZOoFL+YdPx6Wlw+igKYfSMV7Stpmf07f/M6CzY+hgaqh1FQPYIK5i3UN/RW/hlER1AYP5cGJ//KLyIIgrDvokeeQ3rkJFLR2RTaYdLmClLmVgrMn0mZv5Ayt5My15KyYxSYX5Cyn6ewciSVomdSIXo/KfMN0vZCUnY9KXsjqeguV45/3kiBuYSU/Q2p6EwK7TE0uOLx/ikIgiDsGwT2NaTjsymsXE3aPkTL1k6yDayapP7xSSqN1Wx8kvonJmnpmkk69RL3OwirtleRNpvc79dN0sBqt1293Fit3GpXDvsN47tJl9dSUOmnvhYtWEEQhL0KNfJCUubbpO09LG4QtuLoJGnbnoUVJ4gQSpQP4/Q2WYbtIMI4XljZScpeQ4H9DJUufJJ/ioIgCHsH8EMqezzp+HoWsE5Er9tWrDrxxfFD+zsKhl/jn64gCML8suiCg0mXv0ZhZUddsHwxmw+DgKLlGo7eSDo61j9tQRCE+WFR9ExS5fPrfktfvBqNW4AVJ2gzFdf6fiqTpKfYl3MXbKLALKHJyQP8SxAEQZg7EEIUmAt4YAYi5gtWo8hBVPf4OreRNttT27VtZjcp+yBps8P5NmuDRblibFzXvVjdSioK/MsQBEGYG8LyE0hHP+GWZthCNJO/B/ZWCqKfU1/0EVLV15KOhnNbniy0ENmMvxUrKAPRPZVC84+kTIm0qZCy97tR9xYDUfi7irdSYE70L0cQBGH2UeXTXXc5R6ggiOxfjG/jGMul5vn1bnJgFBUrD7AI+uWS/aFFmdeKLI3tpmJ8LRWrr+b9LV/+KNLRW0lFF1JY2U4DE+kyiXHYUuUOKo2+0bsiQRCEWSSw76Gwcj+3Jn1hgnFI0fgkBVGVZwY1Uqy+jcLKvdz688uhtRhWd5KO/5O0+Sgps"
