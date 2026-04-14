@@ -35,7 +35,7 @@ EMPLOYEE_BLOB = "login.xlsx"
 # Use your corporate SMTP or any relay (e.g. Office 365, SendGrid, Gmail)
 SMTP_HOST     = os.environ.get("SMTP_HOST", "smtp.office365.com")
 SMTP_PORT     = int(os.environ.get("SMTP_PORT", "587"))
-SMTP_USER     = os.environ.get("SMTP_USER", "")      # sender email address
+SMTP_USER     = os.environ.get("SMTP_USER", "saloni.deshmukh@bs.nttdata.com")      # sender email address
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")  # app password / SMTP password
 
 # ── LOGO & ADMIN ───────────────────────────────────────────────────────
