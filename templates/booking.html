@@ -6,59 +6,59 @@
 <title>NTT DATA – Book a Room</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Segoe UI',Arial,sans-serif;background:#f5f0fb;min-height:100vh}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#EAF2FB;min-height:100vh}
 
   /* ── NAV ── */
-  nav{background:linear-gradient(90deg,#6a1a9a 0%,#8e44ad 100%);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:58px;box-shadow:0 2px 14px rgba(100,20,160,.3);position:sticky;top:0;z-index:100}
+  nav{background:linear-gradient(90deg,#1a4796 0%,#407CC7 100%);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:58px;box-shadow:0 2px 14px rgba(100,20,160,.3);position:sticky;top:0;z-index:100}
   .nav-logo img{height:32px;display:block}
   .avatar-wrap{position:relative}
-  .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#c840e0,#8e44ad);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem;color:#fff;cursor:pointer;border:2px solid rgba(255,255,255,.4);user-select:none;transition:.15s}
+  .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#5B9FE0,#407CC7);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem;color:#fff;cursor:pointer;border:2px solid rgba(255,255,255,.4);user-select:none;transition:.15s}
   .avatar:hover{border-color:#fff}
   .avatar-label{display:flex;align-items:center;gap:9px}
   .avatar-name{color:rgba(255,255,255,.85);font-size:.85rem;white-space:nowrap}
   .avatar-dropdown{position:absolute;right:0;top:48px;background:#fff;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.18);min-width:200px;padding:8px 0;display:none;z-index:200}
   .avatar-dropdown.open{display:block}
   .avatar-dropdown .dd-header{padding:12px 16px 8px;border-bottom:1px solid #f0f0f0}
-  .avatar-dropdown .dd-name{font-weight:700;color:#6a1a9a;font-size:.92rem}
+  .avatar-dropdown .dd-name{font-weight:700;color:#1a4796;font-size:.92rem}
   .avatar-dropdown .dd-role{font-size:.75rem;color:#888;margin-top:2px}
   .avatar-dropdown .dd-email{font-size:.73rem;color:#999;margin-top:1px;word-break:break-all}
   .avatar-dropdown .dd-btn{display:flex;align-items:center;gap:9px;width:100%;padding:10px 16px;background:none;border:none;cursor:pointer;font-size:.88rem;color:#444;transition:.15s;text-align:left}
-  .avatar-dropdown .dd-btn:hover{background:#f5f0ff;color:#6a1a9a}
+  .avatar-dropdown .dd-btn:hover{background:#f5f0ff;color:#1a4796}
   .avatar-dropdown .dd-btn svg{flex-shrink:0}
 
   /* ── LAYOUT ── */
   .container{max-width:820px;margin:32px auto;padding:0 18px}
   h1{font-size:1.5rem;color:#5a1080;margin-bottom:4px}
-  .subtitle{color:#9e82bf;font-size:.88rem;margin-bottom:26px}
+  .subtitle{color:#6b9fd4;font-size:.88rem;margin-bottom:26px}
 
   /* ── STEPPER ── */
   .stepper{display:flex;align-items:flex-start;margin-bottom:28px;background:#fff;border-radius:12px;padding:18px 22px;box-shadow:0 2px 12px rgba(100,20,160,.08)}
   .step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative}
-  .step:not(:last-child)::after{content:'';position:absolute;top:17px;left:56%;width:88%;height:2px;background:#e0d4f0;transition:.3s}
+  .step:not(:last-child)::after{content:'';position:absolute;top:17px;left:56%;width:88%;height:2px;background:#b8d4ef;transition:.3s}
   .step.done::after{background:#28a745}
   .step.active::after{background:#c9a8e8}
   .step-circle{width:34px;height:34px;border-radius:50%;border:2px solid #dde2eb;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#bbb;transition:.3s;z-index:1}
-  .step.active .step-circle{border-color:#8e44ad;color:#8e44ad;background:#f5eeff}
+  .step.active .step-circle{border-color:#407CC7;color:#407CC7;background:#f5eeff}
   .step.done .step-circle{border-color:#28a745;background:#28a745;color:#fff;font-size:.8rem}
   .step-label{font-size:.7rem;color:#bbb;margin-top:5px;text-align:center;font-weight:600}
-  .step.active .step-label,.step.done .step-label{color:#6a1a9a}
+  .step.active .step-label,.step.done .step-label{color:#1a4796}
 
   /* ── PANELS ── */
   .panel{background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(100,20,160,.07);padding:26px 30px;margin-bottom:20px;display:none}
   .panel.active{display:block}
-  .panel h2{font-size:1.05rem;color:#6a1a9a;margin-bottom:18px;font-weight:700}
+  .panel h2{font-size:1.05rem;color:#1a4796;margin-bottom:18px;font-weight:700}
 
   /* ── CALENDAR ── */
   .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-  .cal-nav button{background:none;border:1.5px solid #e0d4f0;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:1rem;transition:.15s;color:#333}
-  .cal-nav button:hover{background:#f5eeff;border-color:#8e44ad}
-  .cal-month{font-weight:700;color:#6a1a9a;font-size:.97rem}
+  .cal-nav button{background:none;border:1.5px solid #b8d4ef;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:1rem;transition:.15s;color:#333}
+  .cal-nav button:hover{background:#f5eeff;border-color:#407CC7}
+  .cal-month{font-weight:700;color:#1a4796;font-size:.97rem}
   .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
   .cal-header{text-align:center;font-size:.72rem;font-weight:700;color:#aaa;padding:5px 0}
   .cal-day{text-align:center;padding:8px 3px;border-radius:6px;cursor:pointer;font-size:.85rem;transition:.15s;border:1.5px solid transparent;line-height:1}
   .cal-day:hover{background:#f5eeff;border-color:#c9a8e8}
-  .cal-day.selected{background:#8e44ad;color:#fff;border-color:#8e44ad}
-  .cal-day.today{font-weight:700;color:#8e44ad}
+  .cal-day.selected{background:#407CC7;color:#fff;border-color:#407CC7}
+  .cal-day.today{font-weight:700;color:#407CC7}
   .cal-day.today.selected{color:#fff}
   .cal-day.disabled{color:#ddd;cursor:default;pointer-events:none}
 
@@ -66,20 +66,20 @@
   .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .form-group{margin-bottom:14px}
   label{display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:5px}
-  select,input[type=time],input[type=text],textarea{width:100%;padding:10px 12px;border:1.5px solid #e0d4f0;border-radius:8px;font-size:.9rem;transition:.2s;background:#fff;color:#222}
-  select:focus,input:focus,textarea:focus{outline:none;border-color:#8e44ad;box-shadow:0 0 0 3px rgba(142,68,173,.09)}
+  select,input[type=time],input[type=text],textarea{width:100%;padding:10px 12px;border:1.5px solid #b8d4ef;border-radius:8px;font-size:.9rem;transition:.2s;background:#fff;color:#222}
+  select:focus,input:focus,textarea:focus{outline:none;border-color:#407CC7;box-shadow:0 0 0 3px rgba(142,68,173,.09)}
   select:disabled{background:#f5f5f5;color:#aaa;cursor:not-allowed}
   textarea{resize:vertical;min-height:72px}
 
   /* ── ROOM CARDS ── */
   .room-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:4px}
-  .room-card{border:2px solid #e0d4f0;border-radius:10px;padding:14px 16px;cursor:pointer;transition:.2s;background:#fff}
-  .room-card:hover{border-color:#8e44ad;background:#faf5ff}
-  .room-card.selected{border-color:#8e44ad;background:#f5eeff;box-shadow:0 0 0 3px rgba(142,68,173,.12)}
-  .room-card .rc-name{font-weight:700;color:#6a1a9a;font-size:.92rem;margin-bottom:4px}
+  .room-card{border:2px solid #b8d4ef;border-radius:10px;padding:14px 16px;cursor:pointer;transition:.2s;background:#fff}
+  .room-card:hover{border-color:#407CC7;background:#faf5ff}
+  .room-card.selected{border-color:#407CC7;background:#f5eeff;box-shadow:0 0 0 3px rgba(64,124,199,.12)}
+  .room-card .rc-name{font-weight:700;color:#1a4796;font-size:.92rem;margin-bottom:4px}
   .room-card .rc-detail{font-size:.78rem;color:#777;margin-top:2px}
   .rc-badge{display:inline-block;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:6px}
-  .rc-badge.Conference{background:#f0e6ff;color:#6a1a9a}
+  .rc-badge.Conference{background:#f0e6ff;color:#1a4796}
   .rc-badge.Meeting{background:#e8faf0;color:#1a8a3d}
   .rc-badge.Cabin{background:#fff8e6;color:#b45309}
   .no-rooms{text-align:center;padding:28px;color:#aaa;font-size:.9rem;grid-column:1/-1}
@@ -95,10 +95,10 @@
   /* ── BUTTONS ── */
   .btn-row{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap}
   .btn{padding:11px 26px;border:none;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;transition:.2s}
-  .btn-primary{background:linear-gradient(90deg,#8e44ad,#6a1a9a);color:#fff;box-shadow:0 3px 12px rgba(106,26,154,.25)}
+  .btn-primary{background:linear-gradient(90deg,#407CC7,#1a4796);color:#fff;box-shadow:0 3px 12px rgba(106,26,154,.25)}
   .btn-primary:hover{background:linear-gradient(90deg,#7a3896,#5a0a80)}
   .btn-primary:disabled{opacity:.5;cursor:not-allowed}
-  .btn-secondary{background:#f5f0ff;color:#6a1a9a;border:1.5px solid #8e44ad}
+  .btn-secondary{background:#f5f0ff;color:#1a4796;border:1.5px solid #407CC7}
   .btn-secondary:hover{background:#ede5ff}
 
   /* ── SUCCESS ── */
@@ -106,20 +106,20 @@
   .success-icon{font-size:2.8rem;margin-bottom:14px}
   .success-box h2{color:#1a8a3d;font-size:1.4rem;margin-bottom:8px}
   .success-box p{color:#555;font-size:.9rem;margin-bottom:5px}
-  .bid-badge{display:inline-block;background:linear-gradient(90deg,#8e44ad,#6a1a9a);color:#fff;border-radius:8px;padding:8px 22px;margin-top:14px;font-weight:700;font-size:1rem;letter-spacing:1px}
+  .bid-badge{display:inline-block;background:linear-gradient(90deg,#407CC7,#1a4796);color:#fff;border-radius:8px;padding:8px 22px;margin-top:14px;font-weight:700;font-size:1rem;letter-spacing:1px}
 
 
   /* ── MULTI-SELECT ── */
   .multi-select-wrap{position:relative}
-  .multi-select-display{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 12px;border:1.5px solid #e0d4f0;border-radius:8px;font-size:.9rem;cursor:pointer;background:#fff;color:#222;user-select:none;transition:.2s;gap:8px}
-  .multi-select-display:hover{border-color:#8e44ad}
-  .multi-select-display.open{border-color:#8e44ad;box-shadow:0 0 0 3px rgba(142,68,173,.09)}
-  .multi-select-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid #e0d4f0;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:300;padding:6px 0}
+  .multi-select-display{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 12px;border:1.5px solid #b8d4ef;border-radius:8px;font-size:.9rem;cursor:pointer;background:#fff;color:#222;user-select:none;transition:.2s;gap:8px}
+  .multi-select-display:hover{border-color:#407CC7}
+  .multi-select-display.open{border-color:#407CC7;box-shadow:0 0 0 3px rgba(142,68,173,.09)}
+  .multi-select-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid #b8d4ef;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:300;padding:6px 0}
   .multi-select-dropdown.open{display:block}
   .fac-option{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:.88rem;color:#333;transition:.15s}
-  .fac-option:hover{background:#f5eeff;color:#6a1a9a}
-  .fac-option input[type=checkbox]{accent-color:#8e44ad;width:15px;height:15px;cursor:pointer;flex-shrink:0}
-  .fac-tag{display:inline-flex;align-items:center;gap:4px;background:#f0e6ff;color:#6a1a9a;border-radius:12px;padding:2px 8px;font-size:.75rem;font-weight:600}
+  .fac-option:hover{background:#f5eeff;color:#1a4796}
+  .fac-option input[type=checkbox]{accent-color:#407CC7;width:15px;height:15px;cursor:pointer;flex-shrink:0}
+  .fac-tag{display:inline-flex;align-items:center;gap:4px;background:#f0e6ff;color:#1a4796;border-radius:12px;padding:2px 8px;font-size:.75rem;font-weight:600}
 
   /* ── SUGGESTIONS ── */
   .suggest-section{margin-top:16px;padding:14px 18px;background:linear-gradient(135deg,#fff8e6,#fff3d0);border:1.5px solid #f5c842;border-radius:12px;grid-column:1/-1}
@@ -128,8 +128,8 @@
   .suggest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
   .suggest-card{border:2px solid #f5c842;border-radius:10px;padding:12px 14px;cursor:pointer;transition:.2s;background:#fff}
   .suggest-card:hover{border-color:#e6a800;background:#fffbf0;box-shadow:0 0 0 3px rgba(245,200,66,.18)}
-  .suggest-card.selected{border-color:#8e44ad;background:#f5eeff;box-shadow:0 0 0 3px rgba(142,68,173,.12)}
-  .suggest-card .rc-name{font-weight:700;color:#6a1a9a;font-size:.9rem;margin-bottom:4px}
+  .suggest-card.selected{border-color:#407CC7;background:#f5eeff;box-shadow:0 0 0 3px rgba(64,124,199,.12)}
+  .suggest-card .rc-name{font-weight:700;color:#1a4796;font-size:.9rem;margin-bottom:4px}
   .suggest-card .rc-detail{font-size:.77rem;color:#666;margin-top:2px}
   .suggest-floor-badge{display:inline-block;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:6px;background:#fff3d0;color:#92600a}
   .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:7px}
@@ -477,7 +477,7 @@ function buildConfirm(){
     <div class="confirm-row"><span class="confirm-label">People</span><span class="confirm-value">${people}</span></div>
     <div class="confirm-row"><span class="confirm-label">Purpose</span><span class="confirm-value">${purpose}</span></div>
     <div class="confirm-row"><span class="confirm-label">Facilities</span><span class="confirm-value">${selectedFacilities.length?selectedFacilities.join(', '):'None'}</span></div>
-    <div class="confirm-row"><span class="confirm-label">Status</span><span class="confirm-value" style="color:#8e44ad">⏳ Pending Approval</span></div>
+    <div class="confirm-row"><span class="confirm-label">Status</span><span class="confirm-value" style="color:#407CC7">⏳ Pending Approval</span></div>
   `;
 }
 
