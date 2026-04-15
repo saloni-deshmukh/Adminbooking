@@ -8,7 +8,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   body{
     min-height:100vh;
-    background:linear-gradient(135deg,#f3e8ff 0%,#ede0f7 40%,#e8d5f5 100%);
+    background:linear-gradient(135deg,#c8ddf4 0%,#deeaf8 40%,#d8e8f6 100%);
     display:flex;align-items:center;justify-content:center;
     font-family:'Segoe UI',Arial,sans-serif;
   }
@@ -18,14 +18,14 @@
     display:flex;
     width:820px;max-width:96vw;
     border-radius:20px;
-    box-shadow:0 28px 80px rgba(100,40,160,.22);
+    box-shadow:0 28px 80px rgba(64,124,199,.22);
     overflow:hidden;
     min-height:480px;
   }
 
   /* ── LEFT PANEL (form) ── */
   .left{
-    background:#fff;
+    background:#ffffff;
     flex:1;
     padding:44px 44px 36px;
     display:flex;flex-direction:column;justify-content:center;
@@ -35,28 +35,28 @@
 
   .left h2{
     font-size:1.55rem;font-weight:700;
-    color:#0e2d63;letter-spacing:.2px;margin-bottom:6px;
+    color:#2563a8;letter-spacing:.2px;margin-bottom:6px;
   }
-  .left .tagline{color:#6b9fd4;font-size:.82rem;margin-bottom:28px}
+  .left .tagline{color:#5a8dc4;font-size:.82rem;margin-bottom:28px}
 
   .form-group{margin-bottom:16px}
-  label{display:block;font-size:.79rem;font-weight:600;color:#7a6690;margin-bottom:6px;letter-spacing:.2px}
+  label{display:block;font-size:.79rem;font-weight:600;color:#5a8dc4;margin-bottom:6px;letter-spacing:.2px}
   input[type=email],input[type=password],input[type=text]{
     width:100%;padding:12px 14px;
-    border:1.8px solid #b8d4ef;border-radius:10px;
-    font-size:.93rem;color:#2e1a4a;transition:.2s;background:#f4f9ff;
+    border:1.8px solid #a8c4e8;border-radius:10px;
+    font-size:.93rem;color:#1e5a99;transition:.2s;background:#f0f6ff;
   }
-  input:focus{outline:none;border-color:#407CC7;box-shadow:0 0 0 3px rgba(64,124,199,.12);background:#fff}
+  input:focus{outline:none;border-color:#407CC7;box-shadow:0 0 0 3px rgba(64,124,199,.15);background:#fff}
 
   .btn{
     width:100%;padding:13px;
-    background:linear-gradient(90deg,#5B9FE0,#407CC7);
+    background:linear-gradient(90deg,#4d8ed4,#407CC7);
     color:#fff;border:none;border-radius:10px;
     font-size:.98rem;font-weight:700;cursor:pointer;
     transition:.2s;letter-spacing:.3px;margin-top:6px;
-    box-shadow:0 4px 18px rgba(142,68,173,.3);
+    box-shadow:0 4px 18px rgba(64,124,199,.3);
   }
-  .btn:hover{background:linear-gradient(90deg,#b030cc,#7a3896);box-shadow:0 6px 22px rgba(142,68,173,.4)}
+  .btn:hover{background:linear-gradient(90deg,#3570bb,#2e63aa);box-shadow:0 6px 22px rgba(64,124,199,.4)}
   .btn:disabled{opacity:.55;cursor:not-allowed}
 
   .error{
@@ -65,7 +65,7 @@
     margin-bottom:14px;display:none;
   }
 
-  .role-note{font-size:.76rem;color:#b0a0c0;text-align:center;margin-top:14px}
+  .role-note{font-size:.76rem;color:#8aaac8;text-align:center;margin-top:14px}
 
   /* ── RIGHT PANEL (decoration) ── */
   .right{
@@ -75,10 +75,10 @@
     position:relative;overflow:hidden;padding:40px 30px;
   }
   .circle{position:absolute;border-radius:50%;opacity:.08;z-index:1}
-  .c1{width:280px;height:280px;background:#5B9FE0;top:-80px;right:-60px}
-  .c2{width:200px;height:200px;background:#e060f0;top:60px;left:-60px}
-  .c3{width:120px;height:120px;background:#da80f0;bottom:60px;right:30px}
-  .right-overlay{position:absolute;inset:0;background:rgba(80,0,120,0.65);z-index:1}
+  .c1{width:280px;height:280px;background:#4d8ed4;top:-80px;right:-60px}
+  .c2{width:200px;height:200px;background:#5a9ddd;top:60px;left:-60px}
+  .c3{width:120px;height:120px;background:#6aadea;bottom:60px;right:30px}
+  .right-overlay{position:absolute;inset:0;background:rgba(20,60,120,0.65);z-index:1}
   .right-text{position:relative;z-index:2;text-align:center}
   .right-text h3{color:#fff;font-size:2rem;font-weight:700;line-height:1.25;margin-bottom:12px}
   .right-text p{color:rgba(255,255,255,.6);font-size:.85rem;line-height:1.6}
