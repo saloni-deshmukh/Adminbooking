@@ -5,14 +5,21 @@ Changes from local version:
   - Excel files stored in Azure Blob Storage (not local disk)
   - Secret key and credentials loaded from environment variables
   - debug=False, production WSGI via gunicorn
+
+Feature additions:
+  1. Room Master management from frontend (add / delete / disable / enable rooms)
+  2. Reminder email 30 mins before booking start + employee can cancel bookings
+  3. Time selector uses 30-min slots (8:00–18:00 start, 9:00–19:00 end)
 """
 
 import os
 import io
 import smtplib
+import threading
+import time as time_mod
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pandas as pd
 from flask import Flask, request, jsonify, render_template, session, redirect, url_for
@@ -22,16 +29,17 @@ from azure.storage.blob import BlobServiceClient
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-me-in-production")
 
-# Development: shorter session timeout for easier testing
 if os.environ.get("FLASK_ENV") != "production":
-    app.config["PERMANENT_SESSION_LIFETIME"] = 3600  # 1 hour
+    app.config["PERMANENT_SESSION_LIFETIME"] = 3600
     app.config["SESSION_COOKIE_SECURE"] = False
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 # ── AZURE BLOB STORAGE CONFIG ─────────────────────────────────────────
-# Set these in Azure App Service → Configuration → Application Settings
-AZURE_STORAGE_CONNECTION_STRING = os.environ.get("AZURE_STORAGE_CONNECTION_STRING", "DefaultEndpointsProtocol=https;AccountName=adminbooking;AccountKey=YiFCuEJAeDJ3IUsSHrp/Xh0DvOqGhBwL/4RK0aU3gxoinzHmMQ7UO9i5ogieVq6PuxJczc3gWReo+ASt9/cyUw==;EndpointSuffix=core.windows.net")
+AZURE_STORAGE_CONNECTION_STRING = os.environ.get(
+    "AZURE_STORAGE_CONNECTION_STRING",
+    "DefaultEndpointsProtocol=https;AccountName=adminbooking;AccountKey=YiFCuEJAeDJ3IUsSHrp/Xh0DvOqGhBwL/4RK0aU3gxoinzHmMQ7UO9i5ogieVq6PuxJczc3gWReo+ASt9/cyUw==;EndpointSuffix=core.windows.net"
+)
 BLOB_CONTAINER = os.environ.get("BLOB_CONTAINER", "bookingbot")
 
 ROOM_BLOB     = "RoomMaster.xlsx"
@@ -39,15 +47,12 @@ BOOKING_BLOB  = "Bookings.xlsx"
 EMPLOYEE_BLOB = "login.xlsx"
 
 # ── EMAIL CONFIG (SMTP) ───────────────────────────────────────────────
-# Use your corporate SMTP or any relay (e.g. Office 365, SendGrid, Gmail)
 SMTP_HOST     = os.environ.get("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT     = int(os.environ.get("SMTP_PORT", "587"))
-SMTP_USER     = os.environ.get("SMTP_USER", "salooniie07@gmail.com")      # sender email address
-SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "fsjk ifok xjtx cqqr")  # app password / SMTP password
+SMTP_USER     = os.environ.get("SMTP_USER", "salooniie07@gmail.com")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "fsjk ifok xjtx cqqr")
 
 # ── LOGO & ADMIN ───────────────────────────────────────────────────────
-LOGO_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAU4AAABcCAYAAAABOlxNAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAFxEAABcRAcom8z8AABwCSURBVHhe7Z0JlFxVmcc/Rh1xG0V0BjfE5biN2wgzqON2cANHx3FBBwVRlChZut69r6o7QbE5bgNHcdRxVBQVdUSJihhCd9e791X1ko0krCLIMrIMm7KEBBJCSNJz/t+tV6m6773qqu7q7iT1/c75Tifd7771vv+797vf/S6RIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAiCIAjCfktp1ZOoFL+YdPx6Wlw+igKYfSMV7Stpmf07f/M6CzY+hgaqh1FQPYIK5i3UN/RW/hlER1AYP5cGJ//KLyIIgrDvokeeQ3rkJFLR2RTaYdLmClLmVgrMn0mZv5Ayt5My15KyYxSYX5Cyn6ewciSVomdSIXo/KfMN0vZCUnY9KXsjqeguV45/3kiBuYSU/Q2p6EwK7TE0uOLx/ikIgiDsGwT2NaTjsymsXE3aPkTL1k6yDayapP7xSSqN1Wx8kvonJmnpmkk69RL3OwirtleRNpvc79dN0sBqt1293Fit3GpXDvsN47tJl9dSUOmnvhYtWEEQhL0KNfJCUubbpO09LG4QtuLoJGnbnoUVJ4gQSpQP4/Q2WYbtIMI4XljZScpeQ4H9DJUufJJ/ioIgCHsH8EMqezzp+HoWsE5Er9tWrDrxxfFD+zsKhl/jn64gCML8suiCg0mXv0ZhZUddsHwxmw+DgKLlGo7eSDo61j9tQRCE+WFR9ExS5fPrfktfvBqNW4AVJ2gzFdf6fiqTpKfYl3MXbKLALKHJyQP8SxAEQZg7EEIUmAt4YAYi5gtWo8hBVPf4OreRNttT27VtZjcp+yBps8P5NmuDRblibFzXvVjdSioK/MsQBEGYG8LyE0hHP+GWZthCNJO/B/ZWCqKfU1/0EVLV15KOhnNbniy0ENmMvxUrKAPRPZVC84+kTIm0qZCy97tR9xYDUfi7irdSYE70L0cQBGH2UeXTXXc5R6ggiOxfjG/jGMul5vn1bnJgFBUrD7AI+uWS/aFFmdeKLI3tpmJ8LRWrr+b9LV/+KNLRW0lFF1JY2U4DE+kyiXHYUuUOKo2+0bsiQRCEWSSw76Gwcj+3Jn1hgnFI0fgkBVGVZwY1Uqy+jcLKvdz688uhtRhWd5KO/5O0+Sgps"
-
 ADMIN_CREDENTIALS = {
     "email":    "admin",
     "password": os.environ.get("ADMIN_PASSWORD", "Admin@123"),
@@ -65,14 +70,12 @@ def get_blob_client(blob_name):
 
 
 def read_excel_from_blob(blob_name, sheet_name=0):
-    """Download an Excel file from Blob Storage and return a DataFrame."""
     client = get_blob_client(blob_name)
     data = client.download_blob().readall()
     return pd.read_excel(io.BytesIO(data), sheet_name=sheet_name)
 
 
 def write_excel_to_blob(df, blob_name, sheet_name="Sheet1"):
-    """Write a DataFrame back to Blob Storage as Excel."""
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
         df.to_excel(writer, sheet_name=sheet_name, index=False)
@@ -123,9 +126,42 @@ def validate_employee(email_input, password_input):
 
 
 def load_rooms():
+    """Load all sheets (except Bookingsdummy), merge, return DataFrame with 'disabled' column."""
     all_sheets = read_excel_from_blob(ROOM_BLOB, sheet_name=None)
-    dfs = [df for name, df in all_sheets.items() if name != "Bookingsdummy"]
-    return pd.concat(dfs, ignore_index=True)
+    dfs = []
+    for name, df in all_sheets.items():
+        if name == "Bookingsdummy":
+            continue
+        df["_sheet"] = name
+        dfs.append(df)
+    merged = pd.concat(dfs, ignore_index=True)
+    # Ensure 'disabled' column exists (boolean)
+    if "disabled" not in merged.columns:
+        merged["disabled"] = False
+    else:
+        merged["disabled"] = merged["disabled"].fillna(False).astype(bool)
+    return merged
+
+
+def save_rooms(df):
+    """
+    Write room DataFrame back to blob.
+    All rooms go into a single sheet 'Rooms' to simplify round-trip.
+    Preserve original sheet grouping if possible via '_sheet' column.
+    """
+    buffer = io.BytesIO()
+    # Group by original sheet name if available
+    if "_sheet" in df.columns:
+        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+            for sheet_name, grp in df.groupby("_sheet"):
+                out = grp.drop(columns=["_sheet"])
+                out.to_excel(writer, sheet_name=sheet_name, index=False)
+    else:
+        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+            df.to_excel(writer, sheet_name="Rooms", index=False)
+    buffer.seek(0)
+    client = get_blob_client(ROOM_BLOB)
+    client.upload_blob(buffer.read(), overwrite=True)
 
 
 def load_bookings():
@@ -164,10 +200,9 @@ def update_booking_status(booking_id, status, comment=""):
     return df[df["Booking_ID"] == booking_id].iloc[0]
 
 
-# ── EMAIL (SMTP — works on Linux/Azure) ───────────────────────────────
+# ── EMAIL (SMTP) ───────────────────────────────────────────────────────
 
 def send_email_smtp(to_email, subject, html_body):
-    """Send email via SMTP (replaces Outlook/win32com)."""
     try:
         if not to_email or "@" not in str(to_email):
             print(f"Email skipped – invalid address: {to_email!r}")
@@ -212,6 +247,75 @@ def build_email_html(title, body_content, color="#7b52a3"):
     """
 
 
+# ── REMINDER SCHEDULER ────────────────────────────────────────────────
+
+_reminded_ids = set()  # track already-sent reminders in-process (reset on restart)
+
+def reminder_worker():
+    """Background thread: check every 5 minutes for bookings starting in ~30 mins."""
+    while True:
+        try:
+            _check_and_send_reminders()
+        except Exception as e:
+            print(f"Reminder worker error: {e}")
+        time_mod.sleep(300)  # check every 5 minutes
+
+
+def _check_and_send_reminders():
+    now = datetime.now()
+    df = load_bookings()
+    if df.empty:
+        return
+
+    approved = df[df["Status"] == "Approved"]
+    for _, b in approved.iterrows():
+        bid = str(b.get("Booking_ID", ""))
+        if bid in _reminded_ids:
+            continue
+        try:
+            booking_dt_str = f"{b['Date']} {str(b['Start_Time']).strip()[:5]}"
+            booking_dt = datetime.strptime(booking_dt_str, "%Y-%m-%d %H:%M")
+        except Exception:
+            continue
+
+        diff_minutes = (booking_dt - now).total_seconds() / 60
+        # Send reminder if 25–35 minutes away
+        if 25 <= diff_minutes <= 35:
+            emp_email = str(b.get("Email", "")).strip()
+            emp_name  = str(b.get("Employee_Name", "Employee")).strip()
+            room_name = str(b.get("Name", "")).strip()
+            date_str  = str(b.get("Date", "")).strip()
+            start_str = str(b.get("Start_Time", "")).strip()
+            end_str   = str(b.get("End_Time", "")).strip()
+            location  = str(b.get("Location", "")).strip()
+            floor_str = str(b.get("Floor", "")).strip()
+
+            body = f"""
+            <p>Dear {emp_name},</p>
+            <p>⏰ <strong>Reminder:</strong> Your room booking starts in <strong>30 minutes</strong>!</p>
+            <table style="border-collapse:collapse;width:100%;margin-top:12px">
+              <tr><td style="padding:9px 12px;background:#e8f8ee;font-weight:600;width:140px">Booking ID</td><td style="padding:9px 12px;border-bottom:1px solid #eee">{bid}</td></tr>
+              <tr><td style="padding:9px 12px;background:#e8f8ee;font-weight:600">Room</td><td style="padding:9px 12px;border-bottom:1px solid #eee">{room_name}</td></tr>
+              <tr><td style="padding:9px 12px;background:#e8f8ee;font-weight:600">Location</td><td style="padding:9px 12px;border-bottom:1px solid #eee">{location} — {floor_str}</td></tr>
+              <tr><td style="padding:9px 12px;background:#e8f8ee;font-weight:600">Date</td><td style="padding:9px 12px;border-bottom:1px solid #eee">{date_str}</td></tr>
+              <tr><td style="padding:9px 12px;background:#e8f8ee;font-weight:600">Time</td><td style="padding:9px 12px">{start_str} – {end_str}</td></tr>
+            </table>
+            <p style="margin-top:18px;color:#555">Please proceed to the room. Contact facilities if you need any assistance.</p>
+            """
+            if emp_email and "@" in emp_email:
+                send_email_smtp(
+                    emp_email,
+                    f"[NTT DATA] ⏰ Room Booking Reminder — Starts in 30 mins ({bid})",
+                    build_email_html("Room Booking Reminder", body, "#1a8a3d")
+                )
+            _reminded_ids.add(bid)
+
+
+# Start background reminder thread
+_reminder_thread = threading.Thread(target=reminder_worker, daemon=True)
+_reminder_thread.start()
+
+
 # ── AUTH ──────────────────────────────────────────────────────────────
 
 @app.route("/")
@@ -223,7 +327,7 @@ def root():
 @app.route("/health")
 def health():
     return "OK"
-  
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -269,7 +373,9 @@ def booking():
 @app.route("/api/filters")
 def get_filters():
     rooms_df  = load_rooms()
-    locations = rooms_df["location"].unique().tolist()
+    # Only include non-disabled rooms
+    active = rooms_df[rooms_df["disabled"] != True]
+    locations = active["location"].unique().tolist()
     return jsonify({"locations": locations})
 
 
@@ -277,7 +383,8 @@ def get_filters():
 def get_floors():
     location = request.args.get("location")
     rooms_df = load_rooms()
-    floors   = rooms_df[rooms_df["location"] == location]["floor"].unique().tolist()
+    active   = rooms_df[rooms_df["disabled"] != True]
+    floors   = active[active["location"] == location]["floor"].unique().tolist()
     return jsonify({"floors": floors})
 
 
@@ -304,6 +411,9 @@ def check_availability():
 
     rooms_df    = load_rooms()
     bookings_df = load_bookings()
+
+    # Exclude disabled rooms
+    rooms_df = rooms_df[rooms_df["disabled"] != True]
 
     filtered = rooms_df[
         (rooms_df["location"] == location) &
@@ -447,7 +557,102 @@ def book_room():
     return jsonify({"status": "ok", "booking_id": booking_id})
 
 
-# ── ADMIN ─────────────────────────────────────────────────────────────
+# ── EMPLOYEE: MY BOOKINGS + CANCEL ────────────────────────────────────
+
+@app.route("/api/my-bookings")
+def my_bookings():
+    if "user" not in session or session["role"] != "employee":
+        return jsonify({"error": "Unauthorized"}), 401
+    emp_email = session.get("email", "")
+    df = load_bookings()
+    if df.empty:
+        return jsonify({"bookings": []})
+    mine = df[df["Email"].str.strip().str.lower() == emp_email.lower()]
+    return jsonify({"bookings": mine.fillna("").to_dict(orient="records")})
+
+
+@app.route("/api/cancel-booking", methods=["POST"])
+def cancel_booking():
+    if "user" not in session or session["role"] != "employee":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data       = request.get_json(force=True)
+    booking_id = data.get("booking_id")
+
+    df = read_excel_from_blob(BOOKING_BLOB, sheet_name="Sheet1")
+    match = df[df["Booking_ID"] == booking_id]
+    if match.empty:
+        return jsonify({"error": "Booking not found"}), 404
+
+    b = match.iloc[0]
+    emp_email = session.get("email", "")
+
+    # Verify ownership
+    if str(b.get("Email", "")).strip().lower() != emp_email.lower():
+        return jsonify({"error": "Unauthorized"}), 403
+
+    # Check 15-minute cutoff: booking must start more than 15 mins from now
+    try:
+        booking_dt_str = f"{b['Date']} {str(b['Start_Time']).strip()[:5]}"
+        booking_dt = datetime.strptime(booking_dt_str, "%Y-%m-%d %H:%M")
+        now = datetime.now()
+        if (booking_dt - now).total_seconds() < 15 * 60:
+            return jsonify({"error": "Cancellation window has passed (must cancel at least 15 minutes before start)."}), 400
+    except Exception:
+        pass
+
+    # Mark as Cancelled
+    df.loc[df["Booking_ID"] == booking_id, "Status"] = "Cancelled"
+    df.loc[df["Booking_ID"] == booking_id, "Admin_Comment"] = "Cancelled by employee"
+    write_excel_to_blob(df, BOOKING_BLOB, sheet_name="Sheet1")
+
+    emp_name  = str(b.get("Employee_Name", "Employee")).strip()
+    room_name = str(b.get("Name", "")).strip()
+    date_str  = str(b.get("Date", "")).strip()
+    start_str = str(b.get("Start_Time", "")).strip()
+    end_str   = str(b.get("End_Time", "")).strip()
+    location  = str(b.get("Location", "")).strip()
+    floor_str = str(b.get("Floor", "")).strip()
+
+    # Email to employee
+    emp_body = f"""
+    <p>Dear {emp_name},</p>
+    <p>Your booking has been <strong style="color:#c0392b">CANCELLED</strong> as requested.</p>
+    <table style="border-collapse:collapse;width:100%;margin-top:12px">
+      <tr><td style="padding:9px 12px;background:#fde8e8;font-weight:600;width:140px">Booking ID</td><td style="padding:9px 12px;border-bottom:1px solid #eee">{booking_id}</td></tr>
+      <tr><td style="padding:9px 12px;background:#fde8e8;font-weight:600">Room</td><td style="padding:9px 12px;border-bottom:1px solid #eee">{room_name}</td></tr>
+      <tr><td style="padding:9px 12px;background:#fde8e8;font-weight:600">Location</td><td style="padding:9px 12px;border-bottom:1px solid #eee">{location} — {floor_str}</td></tr>
+      <tr><td style="padding:9px 12px;background:#fde8e8;font-weight:600">Date</td><td style="padding:9px 12px;border-bottom:1px solid #eee">{date_str}</td></tr>
+      <tr><td style="padding:9px 12px;background:#fde8e8;font-weight:600">Time</td><td style="padding:9px 12px">{start_str} – {end_str}</td></tr>
+    </table>
+    <p style="margin-top:18px;color:#555">If this was a mistake, please re-book through the portal.</p>
+    """
+    if emp_email and "@" in emp_email:
+        send_email_smtp(emp_email,
+                        f"[NTT DATA] Booking Cancelled — {booking_id}",
+                        build_email_html("Booking Cancelled", emp_body, "#c0392b"))
+
+    # Email to admin
+    admin_body = f"""
+    <p>An employee has cancelled their room booking.</p>
+    <table style="border-collapse:collapse;width:100%;margin-top:12px">
+      <tr><td style="padding:9px 12px;background:#fde8e8;font-weight:600;width:140px">Booking ID</td><td style="padding:9px 12px;border-bottom:1px solid #eee">{booking_id}</td></tr>
+      <tr><td style="padding:9px 12px;background:#fde8e8;font-weight:600">Employee</td><td style="padding:9px 12px;border-bottom:1px solid #eee">{emp_name} ({emp_email})</td></tr>
+      <tr><td style="padding:9px 12px;background:#fde8e8;font-weight:600">Room</td><td style="padding:9px 12px;border-bottom:1px solid #eee">{room_name}</td></tr>
+      <tr><td style="padding:9px 12px;background:#fde8e8;font-weight:600">Location</td><td style="padding:9px 12px;border-bottom:1px solid #eee">{location} — {floor_str}</td></tr>
+      <tr><td style="padding:9px 12px;background:#fde8e8;font-weight:600">Date</td><td style="padding:9px 12px;border-bottom:1px solid #eee">{date_str}</td></tr>
+      <tr><td style="padding:9px 12px;background:#fde8e8;font-weight:600">Time</td><td style="padding:9px 12px">{start_str} – {end_str}</td></tr>
+    </table>
+    <p style="margin-top:18px;color:#555">The room slot is now available for other bookings.</p>
+    """
+    send_email_smtp(ADMIN_EMAIL,
+                    f"[NTT DATA] Booking Cancelled by Employee — {booking_id}",
+                    build_email_html("Booking Cancelled by Employee", admin_body, "#c0392b"))
+
+    return jsonify({"status": "ok"})
+
+
+# ── ADMIN: ROOM MASTER MANAGEMENT ─────────────────────────────────────
 
 @app.route("/admin")
 def admin_dashboard():
@@ -465,6 +670,82 @@ def get_all_bookings():
         return jsonify({"bookings": []})
     return jsonify({"bookings": df.fillna("").to_dict(orient="records")})
 
+
+@app.route("/api/admin/rooms", methods=["GET"])
+def admin_get_rooms():
+    if "user" not in session or session["role"] != "admin":
+        return jsonify({"error": "Unauthorized"}), 401
+    df = load_rooms()
+    # Drop internal sheet column before sending
+    out = df.drop(columns=["_sheet"], errors="ignore")
+    out["disabled"] = out["disabled"].fillna(False).astype(bool)
+    return jsonify({"rooms": out.fillna("").to_dict(orient="records")})
+
+
+@app.route("/api/admin/rooms/add", methods=["POST"])
+def admin_add_room():
+    if "user" not in session or session["role"] != "admin":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json(force=True)
+    required = ["id", "name", "location", "floor", "capacity", "type"]
+    for f in required:
+        if not data.get(f):
+            return jsonify({"error": f"Field '{f}' is required"}), 400
+
+    df = load_rooms()
+
+    # Check duplicate ID
+    if data["id"] in df["id"].astype(str).values:
+        return jsonify({"error": f"Room ID '{data['id']}' already exists"}), 400
+
+    new_row = {
+        "id":         data["id"],
+        "name":       data["name"],
+        "location":   data["location"],
+        "floor":      data["floor"],
+        "capacity":   int(data["capacity"]),
+        "type":       data["type"],
+        "facilities": data.get("facilities", ""),
+        "disabled":   False,
+        "_sheet":     data.get("location", "Rooms").replace(" ", "_")  # group by location
+    }
+    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+    save_rooms(df)
+    return jsonify({"status": "ok"})
+
+
+@app.route("/api/admin/rooms/delete", methods=["POST"])
+def admin_delete_room():
+    if "user" not in session or session["role"] != "admin":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data    = request.get_json(force=True)
+    room_id = data.get("room_id")
+    df = load_rooms()
+    df = df[df["id"].astype(str) != str(room_id)]
+    save_rooms(df)
+    return jsonify({"status": "ok"})
+
+
+@app.route("/api/admin/rooms/toggle-disable", methods=["POST"])
+def admin_toggle_disable():
+    if "user" not in session or session["role"] != "admin":
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data    = request.get_json(force=True)
+    room_id = data.get("room_id")
+    df = load_rooms()
+    mask = df["id"].astype(str) == str(room_id)
+    if not mask.any():
+        return jsonify({"error": "Room not found"}), 404
+    current_state = bool(df.loc[mask, "disabled"].iloc[0])
+    df.loc[mask, "disabled"] = not current_state
+    save_rooms(df)
+    return jsonify({"status": "ok", "disabled": not current_state})
+
+
+# ── ADMIN: ACTION ─────────────────────────────────────────────────────
 
 @app.route("/api/admin/action", methods=["POST"])
 def admin_action():
@@ -532,5 +813,4 @@ def admin_action():
 
 # ── ENTRYPOINT ────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    # For local testing only; Azure uses gunicorn
     app.run(debug=False, host="0.0.0.0", port=5000)
